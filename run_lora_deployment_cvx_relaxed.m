@@ -34,20 +34,20 @@ function params = default_parameters()
     params.U = 3;
     params.M = 4;
 
-    params.tau = 12.0;
+    params.tau = 10.0;
     params.tth = 1.2;
-    params.B = 20e6;
+    params.B = 15e6;
 
     params.K1 = 128;
     params.K2 = 32;
-    params.fCCS = 90e9;
-    params.fUGV = 20e9;
+    params.fCCS = 100e9;
+    params.fUGV = 10e9;
     params.muCCS = 1.0;
     params.muUGV = 1.0;
     params.xiCCS = 0.03;
     params.xiUGV = 0.02;
-    params.pCCScomp = 20.0;
-    params.pUGVcomp = 6.0;
+    params.pCCScomp = 10.0;
+    params.pUGVcomp = 3.5;
 
     params.PmaxCCS = 70.0;
     params.PmaxUGV = 10.0;
@@ -55,9 +55,9 @@ function params = default_parameters()
 
     params.dCCS = 100e6 * ones(params.N, 1);
     params.dUGV = 20e6 * ones(params.N, 1);
-    params.Fup = 20e9 * ones(params.N, 1);
-    params.FferCCS = 6e9 * ones(params.N, 1);
-    params.FferUGV = 2e9 * ones(params.N, 1);
+    params.Fup = 140e9 * ones(params.N, 1);
+    params.FferCCS = 100e9 * ones(params.N, 1);
+    params.FferUGV = 60e9 * ones(params.N, 1);
 
     params.g0 = 1.0;
     params.pathLossExpCCS = 2.2;
@@ -67,7 +67,7 @@ function params = default_parameters()
     params.lambda = 0.1;
     params.antSpacing = params.lambda / 2;
     params.sigmaCCS2 = 2e-7;
-    params.sigmaUAV2 = 1e-6;
+    params.sigmaUAV2 = 1e-5;
 
     params.ccsPos = [0.0; 0.0; 60.0];
     params.uavHeight = 60.0;
@@ -213,18 +213,17 @@ function sol = solve_single_interval(params, state, n)
 end
 
 function alphaCCS = solve_s1_alpha_ccs(params, alphaUGV, ccsLat, tUGV, n)
-    numer = (params.Fup(n) + params.FferCCS(n)) * params.muCCS / params.fCCS;
+    numerCCS = (params.Fup(n) + params.FferCCS(n)) * params.muCCS / params.fCCS;
+    numerUGV = params.FferUGV(n) * params.muUGV / params.fUGV;
     lowerBounds = zeros(params.G, 1);
     for g = 1:params.G
-        residual = params.tau - params.xiCCS - ccsLat(g) - ugv_update_latency(params, alphaUGV(g), n) - tUGV(g);
-        if residual <= 0
-            error('S1 infeasible at interval %d for UGV %d.', n, g);
-        end
-        lowerBounds(g) = numer / residual;
+        [ccsBudget, ~] = split_update_budget(params, ccsLat, tUGV, numerCCS, numerUGV, n, g);
+        lowerBounds(g) = numerCCS / ccsBudget;
     end
     alphaCCS = min(params.K1, max(lowerBounds));
-    alphaCCS = max(alphaCCS, params.epsVal);
+    alphaCCS = max(alphaCCS, params.G + 1.0);
 end
+
 
 function W = solve_s2_beamforming(params, hCCS, alphaCCS, alphaUGV, tUGV, n)
     G = params.G;
@@ -282,18 +281,28 @@ function W = solve_s2_beamforming(params, hCCS, alphaCCS, alphaUGV, tUGV, n)
 end
 
 function alphaUGV = solve_s3_alpha_ugv(params, alphaCCS, ccsLat, tUGV, n)
-    numer = params.FferUGV(n) * params.muUGV / params.fUGV;
-    alphaUGV = zeros(params.G, 1);
-    lupdCCS = ccs_update_latency(params, alphaCCS, n);
+    numerCCS = (params.Fup(n) + params.FferCCS(n)) * params.muCCS / params.fCCS;
+    numerUGV = params.FferUGV(n) * params.muUGV / params.fUGV;
+    lowerBounds = zeros(params.G, 1);
     for g = 1:params.G
-        residual = params.tau - lupdCCS - ccsLat(g) - params.xiUGV - tUGV(g);
-        if residual <= 0
-            error('S3 infeasible at interval %d for UGV %d.', n, g);
-        end
-        alphaUGV(g) = min(params.K2, numer / residual);
-        alphaUGV(g) = max(alphaUGV(g), params.epsVal);
+        [~, ugvBudget] = split_update_budget(params, ccsLat, tUGV, numerCCS, numerUGV, n, g);
+        lowerBounds(g) = numerUGV / ugvBudget;
     end
+    alphaCommon = min(params.K2, max(lowerBounds));
+    alphaCommon = max(alphaCommon, 1.0);
+    alphaUGV = alphaCommon * ones(params.G, 1);
 end
+
+function [ccsBudget, ugvBudget] = split_update_budget(params, ccsLat, tUGV, numerCCS, numerUGV, n, g)
+    sharedBudget = params.tau - ccsLat(g) - tUGV(g) - params.xiCCS - params.xiUGV;
+    if sharedBudget <= 0
+        error('Update-budget split infeasible at interval %d for UGV %d.', n, g);
+    end
+    totalNumer = numerCCS + numerUGV;
+    ccsBudget = sharedBudget * numerCCS / totalNumer;
+    ugvBudget = sharedBudget * numerUGV / totalNumer;
+end
+
 
 function beta = solve_s4_association(params, hUGV, gamma, p)
     G = params.G;
@@ -526,7 +535,7 @@ function val = ccs_update_latency(params, alphaCCS, n)
 end
 
 function val = ugv_update_latency(params, alphaUGV, n)
-    val = params.FferUGV(n) * params.muUGV / (max(alphaUGV, params.epsVal) * params.fUGV) + params.xiUGV;
+    val = params.FferUGV(n) * params.muUGV ./ (max(alphaUGV, params.epsVal) * params.fUGV) + params.xiUGV;
 end
 
 function rate = ugv_uav_rate(params, absH2, gamma, p)
@@ -633,5 +642,3 @@ function plot_ao_convergence(results, params)
     close(fig);
     fprintf('  convergence plot saved to %s\n', params.figName);
 end
-
-
