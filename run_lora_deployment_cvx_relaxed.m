@@ -46,18 +46,18 @@ function params = default_parameters()
     params.muUGV = 1.0;
     params.xiCCS = 0.03;
     params.xiUGV = 0.02;
-    params.pCCScomp = 10.0;
+    params.pCCScomp = 5.0;
     params.pUGVcomp = 3.5;
 
-    params.PmaxCCS = 70.0;
-    params.PmaxUGV = 10.0;
+    params.PmaxCCS = 10.0;
+    params.PmaxUGV = 5.0;
     params.betaMax = 2;
 
     params.dCCS = 100e6 * ones(params.N, 1);
     params.dUGV = 20e6 * ones(params.N, 1);
-    params.Fup = 140e9 * ones(params.N, 1);
-    params.FferCCS = 100e9 * ones(params.N, 1);
-    params.FferUGV = 60e9 * ones(params.N, 1);
+    params.Fup = 100e9 * ones(params.N, 1);
+    params.FferCCS = 60e9 * ones(params.N, 1);
+    params.FferUGV = 40e9 * ones(params.N, 1);
 
     params.g0 = 1.0;
     params.pathLossExpCCS = 2.2;
@@ -66,7 +66,7 @@ function params = default_parameters()
     params.kappaUGV = 1.5;
     params.lambda = 0.1;
     params.antSpacing = params.lambda / 2;
-    params.sigmaCCS2 = 2e-7;
+    params.sigmaCCS2 = 1e-9;
     params.sigmaUAV2 = 1e-5;
 
     params.ccsPos = [0.0; 0.0; 60.0];
