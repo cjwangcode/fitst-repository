@@ -1,0 +1,493 @@
+                                                                                                                                              1
+
+
+
+                        I. I NTRODUCTION                                 where wCCS [n] denotes the transmit beamforming vector
+                                                                                                                            CCS
+                       II. S YSTEM M ODEL                                which is limited by a maximum transmit power Pmax       as
+                                                                                    2       CCS
+                                                                         ∥wCCS [n]∥ ≤ Pmax , ∀n, and sCCS [n] is the data symbol
+   We investigate a cloud-edge-device collaborative LAWN                 with E{|sCCS [n]|2 } = 1.
+system for distributed deployment of a general LLM. LLMs                   The channel between the CCS and the g-th UGV hg [n] is
+are deployed respectively on a central cloud server (CCS),               modeled as Rician fading, which is given by
+G UGV edge servers, and U UAV devices. To accommodate                                     s                   s                !
+varying computational capacities across platforms, LLMs of                                      kg   LoS           1   NLoS
+                                                                          hg [n] = gg [n]           a [n] +           a     [n] ,
+different scales are deployed accordingly. Their corresponding                                kg + 1 g          kg + 1 g
+LoRA parameters are specifically defined as C-LoRA, G-                                                                          (3)
+LoRA, and A-LoRA Specifically, the CCS first update the C-
+                                                                                             g0
+LoRA, according to the arrival data. Then, the CCS transmits             where gg [n] = ∥C−G   g [n]∥
+                                                                                                      is the path-loss, and g0 denotes the
+the C-LoRA to the UGVs. Afterwards, the UGVs transfer                    channel power gain at a reference distance, kg is the Rician
+the C-LoRA to their corresponding G-LoRA parameters. The                 factor of the channel between the CCS and the g-th UGV,
+transferred G-LoRA is then transmitted by the UGVs to the                aLoS
+                                                                           g [n] is the steering vector, which is given by
+U UAVs under their respective coverage. At last, the UAVs                                    h                                         iT
+                                                                                                   −jϕg [n]             −j(M −1)ϕg [n]
+transfer the received G-LoRA to their corresponding A-LoRA                       aLoS
+                                                                                   g  [n] =   1, e          , . . . , e                   , (4)
+parameters.
+   The set of the UGVs and the UAVs are denoted as G =                   where ϕg [n] = 2πd λ cos θ(C, Gg [n]), specifically, d and λ
+{1, . . . , G}, U = {1, . . . , U }, respectively. The mission of the    represent the spacing between two adjacent antennas and the
+LoRA parameter update and deployment should be completed                 carrier wavelength, respectively, and θ(C, Gg [n]) denotes the
+within time period T , which is divided into N time interval,            AoD towards the g-th UGV, which can be expressed as
+                                    T
+each with a duration of τ = N         , where the set of time interval                                              Hc
+                                                                                      θ(C, Gg [n]) = arccos                  .             (5)
+is denoted as N = {1, . . . , N }. The CCS is located at a fixed                                                ∥C − Gg [n]∥
+position C = {cx , cy , Hc }. We assume that the UGVs navigate
+on the internal roads within the considered region, and the              Besides, aNLoS
+                                                                                    g    [n] denote the NLoS component of the channel
+UAVs navigate on the designed low-altitude corridors, and                between the CCS and the g-th UGV, which has a zero mean
+the navigation information, including position and velocity, is          and unit variance. Then, the received signal of the g-th UGV
+known. The position of the g-th UGV and the u-th UAV at time             at time slot k of time interval n can be given by
+slot k of time interval n are denoted as Gg [n] = {g g [n], 0}                           yg [n] = hH
+                                                                                                   g [n]xCCS [n] + ng [n],                 (6)
+and U u [n] = {uu [n], H}, where g g [n] = {ggx [n], ggy [n]}
+is the two-dimensional (2D) coordinates of the g-th UGV,                 where ng [n] ∼ CN (0, σg2 ) is the noise. The achievable data
+uu [n] = {uxu [n], uyu [n]} represents the 2D coordinates of the         rate can be given by
+u-th UAV, and H is the flying altitude of the UAVs.                                                                        2
+                                                                                                                            
+                                                                                                            H
+                                                                                                          h g [n]w CCS [n]
+                                                                                  Rg [n] = B log2 1 +                       ,    (7)
+                                                                                                                            
+                                                                                                                 σg2
+A. CCS Update and Transmission Model
+   At the beginning of each time interval, new data set with             where B is the system bandwidth. Accordingly, the latency
+total amount ddata [n] is arrived at the CCS. The unit compu-            for the C-LoRA transmission from the CCS to the g-th UGV
+tational workload for C-LoRA parameter updates is denoted                can be given by
+as fup . The data amount of the updated C-LoRA parameter
+is denoted as dCCS [n]. Additionally, we assume that CCS                                                      dCCS [n]
+                                                                                               Ltran
+                                                                                                CCS,g [n] =            .                   (8)
+has a total of KCCS GPU cores, with each core having a                                                         Rg [n]
+computing capability of fCCS . Accordingly, the latency for              Then, the total energy consumption during the CCS update
+C-LoRA update of the CCS at time interval n can be given                 and transmission can be expressed as
+by
+                            ddata [n]fup                                           ECCS [n] = αCCS [n]pCCS Lupd
+                                                                                                            CCS [n]
+             Lupd
+               CCS [n] =                  + ξCCS ,        (1)                                                                              (9)
+                           αCCS [n]fCCS                                                          + ∥wCCS [n]∥2 max Ltran
+                                                                                                                    CCS,g [n],
+                                                                                                                   g∈G
+where αCCS [n] is the scheduling number of the GPU cores of
+                                                                         where pCCS denotes the computation power of one GPU core
+the CCS during the time interval n, ξCCS is constant coeffi-
+                                                                         of the CCS.
+cient representing the fixed overheads, including kernel launch
+latency, context switching delay, and memory allocation time
+of the CCS. We consider that an access point equipped with               B. UGV Update and Transmission Model
+M -antenna linear-array is co-located with the CCS. Then, the              Upon receiving the updated C-LoRA parameters from the
+CCS transmit the updated C-LoRA parameter to the UGVs.                   CCS, each UGV first transfer the C-LoRA to their respective
+The transmitted signal by the CCS at time interval n can be              G-LoRA. The computational workload for transferring at the
+given by                                                                 UGV is denoted as Ffer,UGV [n]. After transferring, the data
+                 xCCS [n] = wCCS [n]sCCS [n],                (2)         amount of the G-LoRA parameter at the g-th UGV is denoted
+                                                                                                                                      2
+
+
+
+as dg [n]. Meanwhile, we assume that the g-th UGV has a                   As a result, the latency for the G-LoRA transmission of the
+total of Kg GPU cores, with each core having a computing                u-th UAV can be given by
+capability of fUGV . Then, the latency for LoRA transferring                                        dUGV [n]
+of the g-th UGV can be given by                                                           Ltran
+                                                                                           u [n] = PG            .                (14)
+                                                                                                    g=1 Rg,u [n]
+                             Ffer,UGV [n]µg
+                Lupd
+                 g [n] =                    + ξg ,              (10)    Similarly, we assume that the UAV performs the A-LoRA
+                              αg [n]fUGV
+                                                                        update via parameter replacement, during which computational
+where αg [n] represents the scheduling number of the GPU                latency is negligible. Then, the total energy consumption
+cores of the g-th UGV during the time interval n, µg and ξg             during the g-th UGV update and transmission is given by
+are constant coefficients that characterize the computational              Eg [n] = αg [n]pUGV Lupd                 tran
+                                                                                                g [n] + pg [n] max Lu [n],        (15)
+performance of the GPU on the g-th UGV. Specifically, µg                                                           Ug [n]
+denotes the computational efficiency coefficient, representing          where pUGV denotes the computation power of one GPU core
+the average number of GPU clock cycles required per unit                of UGVs, and Ug [n] = {u|βg,u [n] = 1}.
+computational workload, ξg represents the kernel launch la-
+tency, context switching delay, memory allocation time, and
+device synchronization overhead. We assume that the UGV                 C. UAV Update Model
+performs this update via parameter replacement, during which               After receiving the updated G-LoRA from the associated
+computational latency is negligible.                                    UGV, the UAVs transfer the parameters to update their onw
+   Then, the g-th UGV transmit the transferred G-LoRA to the            A-LoRA. The computational workload for transferring the G-
+associated UAVs. Let βg,u [n] denote the association between            LoRA transmitted by the g-th UGV is Ffer,g [n]. Similarly,
+the g-th UGV and the u-th UAV, where βg,u [n] = 1 represents            the u-th UAV has a total of Ku GPU cores, with each core
+the the u-th UAV is associated with the g-th UGV and receives           having the computing capability of fUAV . Hence, the latency
+the transferred G-LoRA from the u-th UAV, and otherwise                 for LoRA transferring of the u-th UAV is expressed as
+βg,u [n] = 0. Due to the capacity constraints, each UGV can                                          Ffer,gu [n]µu
+                                                                                        Lupd
+                                                                                         u [n] =                   + ξu ,         (16)
+P serve βmax UAVs during each interval. Hence, we have
+only
+                                                                                                     αu [n]fUAV
+   u∈U βg,u [n] ≤ βmax , ∀g. To ensure fairness in transmission,
+we guarantee
+     P           that each UAV is associated at least one UGV,          where g u = {g|βg,u = 1}, αu [n] represents the scheduling
+i.e., g∈G βg,u [n] = 1.                                                 number of the GPU cores of the u-th UAV, and µu and ξu
+   We assume that the UGVs and UAVs are equipped with                   are constant coefficients that characterize the computational
+single antenna, and the frequency division multiple access              performance of the GPU on the u-th UAV. Hence, the total
+protocol is adopted. Specifically, the bandwidth is allocated           energy consumption during the update of the u-th UAV can
+to each UGV, and γg [n] represents the allocation ratio of the          be given by
+bandwidth for the g-th UGV, where 0 < γg [n] < 1.
+                                                                                         Eu [n] = αu [n]pUAV Lupd
+                                                                                                              u [n],              (17)
+pThe transmit signal by the          g-th UGV is xg [n] =
+                                 UGV
+   pg [n]sg [n], where pg [n] ≤ Pmax   is the transmit power of         where pUAV denotes the computation power of one GPU core
+                                                       UGV
+the g-th UGV with a maximum transmit power Pmax            , and        of UAVs.
+                                           2
+sg [n] is the data symbol with E{|sg [n]| } = 1. Accordingly,
+the received signal at the u-th UAV by the g-th UGV can be
+                                                                        D. Problem Formulation
+expressed as
+                                                                           To facilitate the distributed update and deployment of LLM
+           yu,g [n] = βg,u [n] (hg,u [n]xg [n] + nu [n]) ,      (11)    for LAE applications, we aim to minimize the time-averaged
+                                                                        energy consumption during the update process
+where nu [n] ∼ CN (0, σu2 ) denotes the noise at the u-th UAV,                              N                  G            U
+                                                                                                                                      !
+and hg,u [n] is the channel gain between the g-th UGV and                                1 X                 X             X
+                                                                        (P1) : min                ECCS [n] +      Eg [n] +     Eu [n]
+the u-th UAV, which is modeled as Rician fading, and can be                      Ψ      N n=1                g=1           u=1
+written as
+                                                                                s.t.   0 ≤ αCCS [n] ≤ KCCS , ∀αCCS [n] ∈ I, ∀n ∈ N ,
+                       s                s
+                                                                                                                              (18a)
+                                                                !
+                            kg,u               1       NLoS
+  hg,u [n] = gg,u [n]                +               a      [n] ,                                     CCS
+                                                                                       ∥wCCS [n]∥2 ≤ Pmax , ∀n ∈ N ,
+                          kg,u + 1         kg,u + 1 g,u                                                                          (18b)
+                                                                 (12)                  0 ≤ αg [n] ≤ Kg , ∀αg [n] ∈ I, ∀n ∈ N ,
+                         g0
+where gg,u [n] = ∥Gg [n]−U   u [n]∥
+                                    is  the path-loss,   kg,u  is the                                                            (18c)
+Rician factor of the channel between the g-th UGV and the                              βg,u [n] ∈ {0, 1}, ∀g ∈ G, ∀u ∈ U , ∀n ∈ N ,
+u-th UAV, and aNLoS
+                  g,u [n] ∼ CN (0, 1) is the NLoS component.                                                                     (18d)
+   Hence, the achievable data rate from the g-th UGV to the                            X
+u-th UAV can be given by                                                                     βg,u [n] ≤ βmax , ∀g ∈ G, ∀n ∈ N ,  (18e)
+                                                                                       u∈U
+                                  βg,u [n]pg [n]|hg,u [n]|2
+                                                                                     X
+  Rg,u [n] = γg [n]B log2 1 +                                 . (13)                         βg,u [n] = 1, ∀u ∈ U, ∀n ∈ N ,       (18f)
+                                             σu2                                       g∈G
+                                                                                                                                                 3
+
+
+
+              0 < γg [n] < 1, ∀g ∈ G, ∀n ∈ N ,                     (18g)                 s.t.    0 ≤ αCCS [n] ≤ KCCS , ∀αCCS [n] ∈ I,
+              G
+              X                                                                                                                    (21a)
+                    γg [n] ≤ 1, ∀n ∈ N ,                           (18h)                         Lg [n] ≤ τ.                                 (21b)
+              g=1
+                        UGV
+              pg [n] ≤ Pmax , ∀g ∈ G, ∀n ∈ N ,                     (18i)   where
+                                                                                                                           G
+              0 ≤ αu [n] ≤ Ku , ∀αu [n] ∈ I, ∀n ∈ N ,                                                                      X
+                                                                   (18j)      ΨS1 [n] = ∥wCCS [n]∥2 max Ltran
+                                                                                                         CCS,g [n] +              Eg [n].     (22)
+                                                                                                        g∈G
+                                                                                                                           g=1
+              Lg [n] ≤ τ, ∀g ∈ G, ∀n ∈ N ,                         (18k)
+                                                                           Firstly, we relax the integer constraint (20a) as
+              Ltran
+               CCS,g [n] ≤ tth , ∀g ∈ G, ∀n ∈ N ,                  (18l)
+where Lg [n] denotes the total update latency associated with                                    0 ≤ αCCS [n] ≤ KCCS .                        (23)
+the g-th UGV, which ensures that the update latency cannot                 Subproblem S1.n is a scalar convex optimization problem, and
+exceed the duration of each interval, and is given by                      can be efficiently solved, where the closed-form solution to
+          Lg [n] = Lupd        tran          upd
+                    CCS [n] + LCCS,g [n] + Lg [n]
+                                                                           S1.n can be derived by enforcing the delay constraint as
+                                                                    (19)
+                   + max Ltran             upd
+                                                 
+                               u [n] + Lu [n] ,
+                                                                                                                                
+                                                                              ∗                    (Fup [n] + Ffer,CCS [n]) µCCS
+                       u∈Ug [n]                                              αCCS [n] = max 0,                                     . (24)
+                                                                                                         fCCS (τ − ξCCS )
+and tth represents the latency threshold for the G-LoRA
+deployment of the CCS-to-UGV links.
+                                                                           C. Subproblem S2: CCS Beamforming
+     III. P ROBLEM T RANSFORMATION AND S OLUTION                              Given all other variables, we optimize the transmit beam-
+A. Problem Transformation                                                  forming of the CCS w. Hence, we can restate the problem
+   We can observe that, there are no cross-interval dependen-              P1.n as
+cies or shared variables in problem P1. Hence, it can be safely
+                                                                               (S2.n) : min ∥wCCS [n]∥2 max Ltran
+                                                                                                             CCS,g [n] + ΨS2 [n]
+decomposed into N independent single-interval subproblems,                                Ψ                        g∈G
+each solved locally and in parallel. Let subproblem P1.n                                  s.t.                 CCS
+                                                                                                               2
+                                                                                                 ∥wCCS [n]∥ ≤ Pmax ,                         (25a)
+denote the subproblem related to the n-th interval, which is
+                                                                                                 Lg [n] ≤ τ, ∀n ∈ N ,                        (25b)
+then given by
+                                                                                                 Ltran
+                                                                                                  CCS,g [n] ≤ tth , ∀g ∈ G,                  (25c)
+                                  G
+                                  X                 U
+                                                    X
+  (P1.n) : min ECCS [n] +                Eg [n] +         Eu [n]           where ΨS2 [n] is a constant value related to other fixed vari-
+              Ψ
+                                  g=1               u=1                    ables, and is expressed as
+             s.t.   0 ≤ αCCS [n] ≤ KCCS , ∀αCCS [n] ∈ I,                                                                 G
+                                                       (20a)                                                             X
+                                                                                 ΨS2 [n] = αCCS [n]pCCS Lupd
+                                                                                                         CCS [n] +             Eg [n].        (26)
+                                   CCS
+                    ∥wCCS [n]∥2 ≤ Pmax ,                           (20b)                                                 g=1
+                    0 ≤ αg [n] ≤ Kg , ∀αg [n] ∈ I,                 (20c)   Problem S2.n cannot be solved due to the non-convex ob-
+                    βg,u [n] ∈ {0, 1}, ∀g ∈ G, ∀u ∈ U ,            (20d)   jective and the coupling of the beamforming vector and the
+                                                                           worst-case CCS transmission latency. Hence, we first introduce
+                    X
+                          βg,u [n] ≤ βmax , ∀g ∈ G,                (20e)
+                     u∈U
+                                                                           an auxiliary variable χ[n], which satisfied
+                     X
+                           βg,u [n] = 1, ∀u ∈ U,                   (20f)              ∥wCCS [n]∥2 Ltran
+                                                                                                   CCS,g [n] ≤ χ[n], ∀g ∈ G.                  (27)
+                     g∈G
+                                                                           Meanwhile, the transmission threshold tth is less than the
+                    0 < γg [n] < 1, ∀g ∈ G,                        (20g)
+                                                                           duration of time interval τ . Thus, constraint (20k) is equivalent
+                     G
+                     X                                                     to constraint (20l). Then, we can rewritten problem S2.n as
+                           γg [n] ≤ 1,                             (20h)
+                     g=1                                                    (S2-1.n) : min χ[n]
+                              UGV                                                         w
+                    pg [n] ≤ Pmax , ∀g ∈ G,                        (20i)
+                                                                                          s.t.                  CCS
+                                                                                                 ∥wCCS [n]∥2 ≤ Pmax ,                        (28a)
+                    0 ≤ αu [n] ≤ Ku , ∀αu [n] ∈ I,                 (20j)
+                                                                                                 Ltran
+                                                                                                  CCS,g [n] ≤ tth , ∀g ∈ G,                  (28b)
+                    Lg [n] ≤ τ, ∀g ∈ G,                            (20k)
+                                                                                                 ∥wCCS [n]∥2 Ltran
+                                                                                                               CCS,g [n] ≤ χ[n],         ∀g ∈ G.
+                    Ltran
+                     CCS,g [n] ≤ tth , ∀g ∈ G.                     (20l)                                                                     (28c)
+B. Subproblem S1: CCS GPU Scheduling                                       To handle the non-convexity constraints in S2-1.n, we first
+   Given all other variables, we aim at optimizing the CCS                 rewrite constraint (20l) as
+GPU scheduling αCCS [n]. Then, the problem P1.n can be                                   
+                                                                                                   H
+                                                                                                                  2
+                                                                                                                    
+restated as                                                                                      h g [n]w CCS [n]    dCCS [n]
+                                                                                    log2 1 +                       ≥         , (29)
+                                                                                         
+                                                                                                        σg2            Btth
+   (S1.n) : min αCCS [n]pCCS Lupd
+                              CCS [n] + ΨS1 [n]
+              Ψ
+                                                                                                                                                        4
+
+
+
+which is equivalent to                                                            D. Subproblem S3: UGV GPU Scheduling
+                                         2                                           Similar to subproblem S1, when fixed other variables, we
+                     hH
+                      g [n]w CCS [n]         ≥ ΨS2−2 [n],                  (30)   optimize the GPU scheduling of UGVs. The problem is
+                                                                                  restated as
+where                                 d [n]                                                           G
+                                        CCS
+                                                                                                       X
+                                                                                                           αg [n]pUGV Lupd
+                                                                                                                             
+                   ΨS2−2 [n] = σg2    2 Btth
+                                             −1 .                          (31)        (S3.n) : min
+                                                                                                  Ψ
+                                                                                                                       g [n] + ΨS3 [n]
+                                                                                                          g=1
+
+Let W [n] = wCCS [n]wH                                  CCS                                      s.t.    (20c) and (20k),
+                           CCS [n], where tr (W [n]) ≤ Pmax
+and rank (W [n]) = 1. Through semi-definite relaxation,                           where
+constraint (30) can be transformed as                                                                            G 
+                                                                                                                 X                           
+                                                                                    ΨS3 [n] = ECCS [n] +             pg [n] max Ltran
+                                                                                                                                     u [n]       .   (40)
+             tr hg [n]hHg [n]W  [n]   ≥ ΨS2−2 [n],      (32)                                                     g=1
+                                                                                                                              Ug [n]
+
+                                                                                  Similarly, we relax the integer constraint (20c) as
+                              W [n] ⪰ 0.                                   (33)
+                                                                                                         0 ≤ αg [n] ≤ Kg , ∀g.                       (41)
+Then, we rewrite constraint (38d) as
+                                                                                  Substituting into problem S3.n, we can obtain the following
+                                     2
+                        ∥wCCS [n]∥ · dCCS [n]                                     convex problem S3-1.n as
+          Rg [n] ≥                            ,         ∀g ∈ G.            (34)
+                                χ[n]                                                                       G
+                                                                                                           X
+                                                                                                                  αg [n]pUGV Lupd
+                                                                                                                                   
+                                                                                      (S3-1.n) : min                          g [n] + ΨS3 [n]
+Note that Rg [n] is a concave function of wCCS [n], but                                            Ψ
+                                                                                                           g=1
+the right-hand side of (34) is convex in wCCS [n]. Thus,                                          s.t.    (20k) and (41).
+the constraint is non-convex. At iteration l of successive
+convex approximation (SCA), given the current beamforming                         Problem S3-1.n can be solved efficiently by conventional
+          (l)                                                                     solvers. Moreover, the close-form solution can be derived by
+vector wCCS [n], we construct a convex lower bound for
+Rg [n] using its first-order Taylor expansion. Specifically, let                  enforcing the delay constraint as
+sg (wCCS [n]) = |hH                 2                                                                                           
+                    g [n]w CCS [n]| . Then, the gradient of Rg [n]                             ∗               Ffer,UGV [n]µUGV
+                                (l)                                                          αg [n] = max 0,                       .      (43)
+with respect to wCCS [n] at wCCS [n] is expressed as                                                           fUGV (τ − ξUGV )
+                                             H              (l)                   E. Subproblem S4: UGV-UAV Association
+                               B 2hg [n]hg [n]wCCS [n]
+    ∇w Rg [n] w(l) [n] =           ·                                       (35)
+                     CCS      ln 2   sg (w
+                                           (l)
+                                               [n]) + σg2                           When fixing other variables, we optimize the UGV-UAV
+                                                 CCS
+                                                                                  association and reformulate the following subproblem
+Thus, the lower bound of Rg [n] can be given by                                                        XG                     
+                                                                                                                         tran
+                                                                                       (S4.n) : min          pg [n] max Lu [n] + ΨS [n]
+Rg [n] ≥ Rg(l) [n]                                                                                Ψ
+                                                                                                          g=1
+                                                                                                                        Ug [n]
+                                 H                    
+       +ℜ
+                                                 (l)
+                 ∇w Rg [n] w(l) [n] (wCCS [n] − wCCS [n])                                        s.t.    (20d), (20e), (20f), and (20k),
+                                 CCS
+                                                                                  where
+        ≜ R̃g(l) [n].                                                                                            G
+                                                                           (36)
+                                                                                                                 X
+                                                                                                                       αg [n]pUGV Lupd
+                                                                                                                                        
+                                                                                       ΨS [n] = ECCS [n] +                         g [n] .           (45)
+                                                                                                                 g=1
+Substituting (36) into (34), we obtain the following rearranged
+convex constraint                                                                 Since pg [n] and ΨS [n] are fixed constant, S4.n is equivalent
+                                                                                  to
+             ∥wCCS [n]∥2 · dCCS [n] ≤ χ[n] · R̃g(l) [n].                   (37)                              XG
+                                                                                       (S4.n) : max min          Rg [n]
+Accordingly, problem S2-1.n is now transformed into the                                                  Ψ
+                                                                                                                 g=1
+following problem
+                                                                                                         s.t.    (20d), (20e), (20f), and (20k),
+(S2-2.n) : min χ[n]
+               w                                                                  F. Subproblem S5: UGV Bandwidth Allocation
+                                       CCS
+              s.t.      tr (W [n]) ≤ Pmax  ,               (38a)                     Fixing others, we optimize the bandwidth allocation of
+                                            
+                                   H
+                        tr hg [n]hg [n]W [n] ≥ ΨS2−2 [n], ∀g,                     UGVs. Then, the problem can be simplified as
+                                                                                                       G 
+                                                           (38b)                                      X                         
+                                                                                       (S5.n) : min        pg [n] max Ltran
+                                                                                                                       u    [n]   + ΨS [n]
+                        W [n] ⪰ 0,                                    (38c)                       Ψ
+                                                                                                          g=1
+                                                                                                                        Ug [n]
+                                     2
+                        ∥wCCS [n]∥       · dCCS [n] ≤ χ[n] · R̃g(l) [n],∀g.                      s.t.    (20g) and (20k),
+                                                                      (38d)
+                                                                                  Problem S5.n is convex, and can be solved by conventional
+Problem S2-2.n is convex, which can be effectively solved.                        solver.
+                                                                                                                                                          5
+
+
+
+G. Subproblem S6: UGV Transmit Power                                                     which is a convex quadratic function. At iteration l, given
+                                                                                         the current solution (p(l) , t(l) ), we solve the following convex
+                           G                                                           subproblem:
+                           X
+        (S6.n) : min                pg [n] max Ltran
+                                                  u [n]               + ΨS [n]                                              G
+                                                                                                                                                     !
+                  Ψ                        Ug [n]                                                       (l)
+                                                                                                                           X   1 pg [n]2     tg [n]2
+                           g=1                                                              (S6-SCA.n) : min                              + (l)        (61)
+                                                                                                             pg [n],tg [n]
+                                                                                                                           g=1
+                                                                                                                               2 p(l)
+                                                                                                                                    g [n]    tg [n]
+                 s.t.      (20i) and (20k),
+                                                                                           subject to:
+Since the objective function and constraints are non-convex
+and non-linear in pg [n], we employ the SCA to iteratively                                                        dUGV [n]
+                                                                                                      tg [n] ≥ PG        (l)
+                                                                                                                                    ,   ∀u ∈ Ug [n]   (62)
+solve the problem. Firstly, to handle the max operator, we
+                                                                                                                g ′ =1 R̃g ′ ,u [n]
+introduce auxiliary variables ζg [n] satisfies                                                                          max
+                                                                                                          0 ≤ pg [n] ≤ PUGV                           (63)
+                  tg [n] ≥ Ltran
+                            u [n],                  ∀u ∈ Ug [n]                   (49)             Lmax [n] ≤ τ                                       (64)
+Then, the problem is reformulated as                                                     This is a convex optimization problem (QP or SOCP) and
+                                                G
+                                                X                                        can be efficiently solved using standard solvers such as CVX,
+              (S6-1.n) :          min                 pg [n] · ζg [n]             (50)   MOSEK, or Gurobi.
+                              pg [n],ζg [n]
+                                                g=1
+
+  subject to:
+                          dUGV [n]
+              tg [n] ≥ PG                ,                ∀u ∈ Ug [n]             (51)
+                        g ′ =1 Rg ,u [n]
+                                 ′
+
+                                max
+                  0 ≤ pg [n] ≤ PUGV                                               (52)
+            Lmax [n] ≤ τ                                                          (53)
+                                                2
+                       βg′ ,u [n]|hg′ ,u [n]|
+  Define ag′ ,u =                 2
+                                 σu                 . Then,
+            Rg′ ,u [n] = γg′ [n]B log2 (1 + ag′ ,u pg′ [n])                       (54)
+   This function is concave in pg′ [n]. At the current iterate
+ (l)
+pg′ [n], its first-order Taylor expansion is:
+      (l)        (l)                                                       (l)
+ R̃g′ ,u [n] = Rg′ ,u [n] + ∇pg′ Rg′ ,u [n] p(l) · (pg′ [n] − pg′ [n])
+                                             g′
+                                                                   (55)
+where
+                                    1             ag′ ,u
+      ∇pg′ Rg′ ,u [n] = γg′ [n]B ·       ·                         (56)
+                                   ln 2 1 + ag′ ,u pg′ [n]
+                                                                            (l)
+  Since Rg′ ,u [n] is concave, we have Rg′ ,u [n] ≤ R̃g′ ,u [n],
+and thus:
+                        dUGV [n]        dUGV [n]
+          Ltran
+           u [n] = P                  ≥P     (l)
+                                                           (57)
+                        g ′ R ′
+                             g ,u [n]    ′ R̃ ′  [n]      g    g ,u
+
+Therefore, the constraint tg [n] ≥ Ltran
+                                    u [n] can be approximated
+by:
+                                   dUGV [n]
+                         tg [n] ≥ P      (l)
+                                                                                  (58)
+                                   g ′ R̃g ′ ,u [n]
+
+which is linear in pg [n]. The objective function contains the
+bilinear term pg [n]·tg [n]. To convexify it, we use the AM-GM
+inequality:
+                                       !
+                1 pg [n]2      tg [n]2
+pg [n]·tg [n] ≤              + (l)       , for p(l)           (l)
+                                                  g [n] > 0, tg [n] > 0
+                2 p(l)
+                     g [n]     tg [n]
+                                                               (59)
+   Thus, at iteration l, we approximate the objective as:
+                    G
+                                                !
+                   X    1 pg [n]2       tg [n]2
+                                     + (l)                     (60)
+                   g=1
+                        2 p(l)g [n]     tg [n]
+
