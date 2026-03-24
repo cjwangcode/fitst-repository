@@ -1,0 +1,86 @@
+一、CCS（中心云服务器）
+
+符号与单位说明
+   α：GPU 数量（无单位）
+   ddata ​[n]：训练数据量，单位 M tokens（统一设为 150 M tokens）
+   total_flos：总浮点运算量，单位 FLOPs
+   Lupd ​：实际训练时间（即 Lupd
+                      CCS [n]），单位 秒 (s)
+                          ​
+
+   fup ​：单位计算工作负载，单位 FLOPs / token，保持原值 2.07×10¹⁰ FLOPs/token
+   ξCCS ​：固定开销，179 s
+   fCCS ​：单 GPU 有效算力，4.68×10¹² FLOP/s
+
+直接可用参数总结
+        参数                值                  单位                                说明
+
+ddata ​[n]        150               M tokens              训练数据量
+
+fup ​             2.07×10¹⁰         FLOPs/token           每个 token 在单 GPU 上的计算量
+
+αCCS ​[n]         1~8               —                     GPU 数量
+
+fCCS ​            4.68×10¹²         FLOP/s                单 GPU 有效计算能力
+
+ξCCS ​            179               s                     固定开销
+
+dccs ​[n]         0.875             MB                    c-LORA
+
+
+
+
+二、UGV（无人机）
+
+符号与单位说明
+   数据量：ddata ​[n] = 15 M tokens
+   单位计算量：fup ​ = 2.07 × 1010 FLOPs/token
+   总计算量：
+
+             Ffer,UGV ​[n]μg ​ = ddata ​[n] × fup ​ = 15 × 106 × 2.07 × 1010 = 3.105 × 1017 FLOPs
+
+   单核算力：fUGV ​ = 4.68 × 1012 FLOP/s（与 CCS 相同）
+   固定开销：ξg ​ = 179 s（与 CCS 相同）
+二、直接可用参数总结（UGV）
+
+             参数                 值            单位                 说明
+
+ddata ​[n]              15           M tokens       转换时的训练数据量（与 UAV 一致）
+
+Ffer,UGV ​[n]μg ​（典型）   3.105×10¹⁷   FLOPs          总转换计算量
+
+αg ​[n]                 1~8          —              UGV 调度的 GPU 核心数
+
+fUGV ​                  4.68×10¹²    FLOP/s         单 GPU 有效算力（与 CCS 相同）
+
+ξg ​                    179          s              固定开销（与 CCS 相同）
+
+
+
+三、UAV（无人机）
+
+符号与单位说明
+   αu ​[n]：UAV 更新时调度的 GPU 核心数
+   ddata ​[n]：训练数据量，单位 M tokens（统一设为 15 M tokens）
+   Ffer,gu ​[n]μu ​：转换计算负载与效率系数的乘积，即 total_flos，单位 FLOPs
+   Lupd
+     u [n]：UAV 转换延迟，单位 秒 (s)
+         ​
+
+   dG−LoRA ​[n]：G-LoRA 参数数据量，单位 MB，设为 15 MB
+   fU A ​：单 GPU 有效计算能力，8.90×10¹² FLOP/s
+   ξu ​：固定开销，336.1 s
+
+直接可用参数总结
+             参数                 值             单位                 说明
+
+ddata ​[n]              15               M tokens    训练数据量
+
+Ffer,gu ​[n]μu ​（典型）    1.785×10¹⁷       FLOPs       总计算量
+
+αu ​[n]                 2~8              —           UAV 更新时调度的 GPU 核心数
+
+fU A ​                  8.90×10¹²        FLOP/s      单 GPU 有效计算能力
+
+ξu ​                    336.1            s           固定开销
+

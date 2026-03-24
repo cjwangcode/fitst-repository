@@ -1,0 +1,1 @@
+1. \alpha_{\mathrm{CCS}}^*[n] = \max\left(0, \frac{\left ( F_{\mathrm{up}} [n] + F_{\mathrm{fer, CCS}} [n] \right ) \mu_{\mathrm{CCS}} }{ f_{\mathrm{CCS}} \left ( \tau - \xi_{\mathrm{CCS}} \right )}\right)，其中的F_{\mathrm{up}} [n]、F_{\mathrm{fer, CCS}} [n]、\mu_{\mathrm{CCS}}都没有定义
